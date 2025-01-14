@@ -34,10 +34,6 @@ def lambda_handler(event, context):
         logger.info(f"Quote count: {json_data['count']}:")
         
         # Loop through the JSON data
-        # 1. Find the first quote with n - 1 count
-        # 2. When quote is found increment the quote count
-        # 3. If the quote is the last one increment the main count
-        # 4. Write the updated JSON to S3
         email_quote = ""
         index = 0
         while index < len(json_data['quotes']):
