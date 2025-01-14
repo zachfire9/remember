@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Email a daily quote
+Resources:
+  RememberSchedule:
+      Type: AWS::Scheduler::Schedule
+      Properties:
+        ScheduleExpression: cron(0 13 * * ? *)
+        FlexibleTimeWindow:
+          Mode: FLEXIBLE
+          MaximumWindowInMinutes: 5
+        Target:
+          Arn: !GetAtt RememberAction.Arn
+          RoleArn: !GetAtt RememberInvokeRole.Arn
+
+  RememberInvokeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AllowLambdaInvoke
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt RememberAction.Arn
+
+  RememberAction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./app/
+      Description: Lambda function that reads a JSON file with quotes and emails the next one
+      Environment:
+        Variables:
+          BUCKET_NAME: "fire9-remember"
+          FILE_KEY: "quotes.json"
+          TO_ADDRESS: "zachfire9@gmail.com"
+          SOURCE_ADDRESS: "zach@fireninewebdesign.com"
+      MemorySize: 128
+      Timeout: 3
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      Architectures:
+        - x86_64
+      EphemeralStorage:
+        Size: 512
+      EventInvokeConfig:
+        MaximumEventAgeInSeconds: 21600
+        MaximumRetryAttempts: 2
+      PackageType: Zip
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - logs:*
+              Resource: arn:aws:logs:*:*:*
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+              Resource: arn:aws:s3:::*
+      RecursiveLoop: Terminate
+      SnapStart:
+        ApplyOn: None
+      RuntimeManagementConfig:
+        UpdateRuntimeOn: Auto
