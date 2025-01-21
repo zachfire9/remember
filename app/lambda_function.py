@@ -25,13 +25,12 @@ def lambda_handler(event, context):
         file_content = response['Body'].read().decode('utf-8')
         
         # Log the content
-        logger.info(f"Contents of the file: {file_key}:")
-        logger.info(file_content)
+        logger.info(f"Getting quotes from file: {file_key}:")
 
         # Parse the JSON content
         json_data = json.loads(file_content)
 
-        logger.info(f"Quote count: {json_data['count']}:")
+        logger.info(f"Quote count: {json_data['count']}")
         
         # Loop through the JSON data
         email_quote = ""
@@ -41,9 +40,9 @@ def lambda_handler(event, context):
                 break
 
             quote = json_data['quotes'][index]
-            logger.info(f"Quote: {quote['count']}, Text: {quote['text']}")
-
+            
             if quote['count'] == json_data['count'] - 1:
+                logger.info(f"Quote: {quote['count']}, Text: {quote['text']}")
                 quote['count'] += 1
                 email_quote = quote['text']
 
