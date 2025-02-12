@@ -44,7 +44,7 @@ Resources:
           BUCKET_NAME: "fire9-remember"
           FILE_KEY: "quotes.json"
           TO_ADDRESS: "zachfire9@gmail.com"
-          SOURCE_ADDRESS: "zach@fireninewebdesign.com"
+          SOURCE_ADDRESS: "quote@zachfirestone.com"
       MemorySize: 128
       Timeout: 3
       Handler: lambda_function.lambda_handler
